@@ -38,6 +38,8 @@ function onMouseMove(e) {
 
 function setGameState(state) {
   gameState = state;
+  // Flip board for player1 so their pieces (rows 0-5) are at the bottom
+  setFlipBoard(state.myRole === 'player1');
   render();
 }
 
@@ -69,6 +71,18 @@ function render() {
     drawHex(ctx, x, y, HEX_SIZE - 1);
     ctx.fillStyle = TERRAIN_COLORS[tile.terrain];
     ctx.fill();
+
+    // Territory tint overlay
+    const tileOwner = getOwnerHalf(tile.q, tile.r);
+    if (tileOwner === gameState.myRole) {
+      drawHex(ctx, x, y, HEX_SIZE - 1);
+      ctx.fillStyle = 'rgba(52, 152, 219, 0.1)';
+      ctx.fill();
+    } else {
+      drawHex(ctx, x, y, HEX_SIZE - 1);
+      ctx.fillStyle = 'rgba(231, 76, 60, 0.1)';
+      ctx.fill();
+    }
 
     // Highlight for valid moves
     const isValidMove = validMoves.find(m => m.q === tile.q && m.r === tile.r);
@@ -102,11 +116,6 @@ function render() {
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    // Draw territory divider (slightly thicker line for row 6 boundary)
-    if (tile.r === 5 || tile.r === 7) {
-      // No special drawing needed, the hex borders handle it
-    }
-
     // Draw city
     if (tile.city) {
       const cityColor = PLAYER_COLORS[tile.city.owner];
@@ -132,6 +141,12 @@ function render() {
       const pieceColor = PLAYER_COLORS[piece.owner];
       const pieceSize = 10;
 
+      // Enable glow for specialized units
+      if (piece.specialization && (piece.type === 'cavalry' || piece.type === 'vehicle')) {
+        ctx.shadowColor = SPEC_GLOW_COLORS[piece.specialization];
+        ctx.shadowBlur = 10;
+      }
+
       if (piece.type === 'grunt') {
         ctx.beginPath();
         ctx.arc(x, y, pieceSize, 0, Math.PI * 2);
@@ -144,12 +159,13 @@ function render() {
         drawTriangle(ctx, x, y, pieceSize + 2);
         ctx.fillStyle = pieceColor;
         ctx.fill();
-        // Specialization outline
+        // Specialization outline with glow
         if (piece.specialization) {
           ctx.strokeStyle = TERRAIN_OUTLINE_COLORS[piece.specialization];
-          ctx.lineWidth = 3;
+          ctx.lineWidth = 4;
           ctx.stroke();
         }
+        ctx.shadowBlur = 0;
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 1;
         ctx.stroke();
@@ -157,16 +173,21 @@ function render() {
         drawRoundedRect(ctx, x, y, pieceSize * 2.2, pieceSize * 1.4, 3);
         ctx.fillStyle = pieceColor;
         ctx.fill();
-        // Specialization outline
+        // Specialization outline with glow
         if (piece.specialization) {
           ctx.strokeStyle = TERRAIN_OUTLINE_COLORS[piece.specialization];
-          ctx.lineWidth = 3;
+          ctx.lineWidth = 4;
           ctx.stroke();
         }
+        ctx.shadowBlur = 0;
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 1;
         ctx.stroke();
       }
+
+      // Reset shadow
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
 
       // Dim pieces that already moved this turn
       if (gameState.movedPieceIds && gameState.movedPieceIds.includes(piece.id)) {
@@ -177,26 +198,20 @@ function render() {
     }
   }
 
-  // Draw territory labels
-  ctx.fillStyle = 'rgba(52, 152, 219, 0.15)';
-  ctx.font = '12px Arial';
+  // Draw territory labels - "Your Side" at bottom, "Enemy Side" at top
+  ctx.font = 'bold 12px Arial';
   ctx.textAlign = 'center';
 
-  // Player labels along the sides
-  const p1Tile = board['2,0'];
-  const p2Tile = board['2,12'];
-  if (p1Tile) {
-    const { x, y } = hexToPixel(2, 0);
-    ctx.fillStyle = PLAYER_COLORS.player1;
-    ctx.font = 'bold 11px Arial';
-    ctx.fillText('P1', x, y - HEX_SIZE - 5);
-  }
-  if (p2Tile) {
-    const { x, y } = hexToPixel(2, 12);
-    ctx.fillStyle = PLAYER_COLORS.player2;
-    ctx.font = 'bold 11px Arial';
-    ctx.fillText('P2', x, y + HEX_SIZE + 14);
-  }
+  // After flip, player's own rows always render at the bottom
+  // Use the visual top/bottom positions directly
+  const { y: topY } = hexToPixel(2, flipBoard ? 12 : 0);
+  const { y: botY } = hexToPixel(2, flipBoard ? 0 : 12);
+  const centerX = canvas.width / 2;
+
+  ctx.fillStyle = PLAYER_COLORS[gameState.myRole === 'player1' ? 'player2' : 'player1'];
+  ctx.fillText('Enemy Side', centerX, topY - HEX_SIZE - 5);
+  ctx.fillStyle = PLAYER_COLORS[gameState.myRole];
+  ctx.fillText('Your Side', centerX, botY + HEX_SIZE + 14);
 }
 
 function getCanvasClickCoords(e) {

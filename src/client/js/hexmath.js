@@ -9,13 +9,22 @@ const HEX_HEIGHT = HEX_SIZE * 2;             // pointy-top height
 const MAX_ROW_WIDTH = 6;
 const BOARD_PADDING = 40;
 
+// Board flip state - set when player is player2
+let flipBoard = false;
+
+function setFlipBoard(flip) {
+  flipBoard = flip;
+}
+
 /**
  * Get pixel position for a hex tile at (q, r).
  * Pointy-top orientation, rows of 6 and 5 alternating.
  * 5-tile rows are offset to the right by half a hex width.
  */
 function hexToPixel(q, r) {
-  const rowWidth = ROW_WIDTHS[r];
+  // When flipped (player2), reverse the visual row order
+  const displayR = flipBoard ? (ROW_WIDTHS.length - 1 - r) : r;
+  const rowWidth = ROW_WIDTHS[r]; // use original r for row width
   const isNarrowRow = rowWidth === 5;
 
   // Horizontal spacing between hex centers
@@ -28,7 +37,7 @@ function hexToPixel(q, r) {
 
   // Vertical spacing: 1.5 * size between rows for pointy-top
   const rowSpacing = HEX_SIZE * 1.5;
-  const y = BOARD_PADDING + r * rowSpacing + HEX_SIZE;
+  const y = BOARD_PADDING + displayR * rowSpacing + HEX_SIZE;
 
   return { x, y };
 }

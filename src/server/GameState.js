@@ -37,20 +37,34 @@ function createGameState(roomCode) {
 }
 
 /**
- * Serialize the board for a specific player, hiding opponent's capital.
+ * Serialize the board for a specific player.
+ * During setup phases, hide opponent's placements.
+ * During playing/gameOver, show everything except opponent's capital.
  */
 function serializeBoardForPlayer(gameState, playerRole) {
+  const phase = gameState.phase;
+  const isSetup = phase === 'cityPlacement' || phase === 'capitalSelection' || phase === 'unitPlacement';
   const obj = {};
   for (const [key, tile] of gameState.board) {
     const t = { ...tile };
     if (t.city) {
-      t.city = { ...t.city };
-      if (t.city.owner !== playerRole) {
-        t.city.isCapital = false;
+      if (isSetup && t.city.owner !== playerRole) {
+        // Hide opponent's cities during setup
+        t.city = null;
+      } else {
+        t.city = { ...t.city };
+        if (t.city.owner !== playerRole) {
+          t.city.isCapital = false;
+        }
       }
     }
     if (t.occupant) {
-      t.occupant = { ...t.occupant };
+      if (isSetup && t.occupant.owner !== playerRole) {
+        // Hide opponent's units during setup
+        t.occupant = null;
+      } else {
+        t.occupant = { ...t.occupant };
+      }
     }
     obj[key] = t;
   }

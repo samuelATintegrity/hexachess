@@ -7,9 +7,16 @@ const TERRAIN_COLORS = {
 };
 
 const TERRAIN_OUTLINE_COLORS = {
-  plain: '#F1C40F',
-  forest: '#1E8449',
-  mountain: '#6E4B0A',
+  plain: '#FFD700',
+  forest: '#00FF7F',
+  mountain: '#FF8C00',
+};
+
+// Glow colors for specialization (brighter versions for shadow effect)
+const SPEC_GLOW_COLORS = {
+  plain: '#FFFF00',
+  forest: '#00FF88',
+  mountain: '#FF6600',
 };
 
 const PLAYER_COLORS = {

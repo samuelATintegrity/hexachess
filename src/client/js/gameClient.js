@@ -20,7 +20,10 @@ function initGameClient(sock) {
     myRole = state.myRole;
     setGameState(state);
     updateUI(state);
-    clearSelection();
+    // Don't clear selection during chain capture - updateUI just set it
+    if (!state.chainCapture) {
+      clearSelection();
+    }
   });
 
   socket.on('opponent-disconnected', () => {
@@ -278,7 +281,12 @@ function handleUnitPlacement(hex) {
     unitType: selectedUnitType,
     specialization: selectedUnitType === 'grunt' ? null : selectedSpecialization,
   }, (res) => {
-    if (!res.success) showStatus('Error: ' + res.reason);
+    if (!res.success) {
+      showStatus('Error: ' + res.reason);
+    } else {
+      // Reset specialization so player must choose again for next unit
+      selectedSpecialization = null;
+    }
   });
 }
 
