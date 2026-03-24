@@ -1,59 +1,55 @@
 /**
- * Hex math utilities for flat-top hexagons with offset row layout.
+ * Hex math utilities for pointy-top hexagons with offset row layout.
+ * Rows alternate between 6 and 5 tiles, with 5-tile rows offset right.
  */
 
-const HEX_SIZE = 32; // radius (center to vertex)
-const HEX_WIDTH = HEX_SIZE * 2;
-const HEX_HEIGHT = Math.sqrt(3) * HEX_SIZE;
+const HEX_SIZE = 30; // radius (center to vertex)
+const HEX_WIDTH = Math.sqrt(3) * HEX_SIZE;  // pointy-top width
+const HEX_HEIGHT = HEX_SIZE * 2;             // pointy-top height
 const MAX_ROW_WIDTH = 6;
 const BOARD_PADDING = 40;
 
 /**
  * Get pixel position for a hex tile at (q, r).
- * Uses flat-top orientation with offset rows.
+ * Pointy-top orientation, rows of 6 and 5 alternating.
+ * 5-tile rows are offset to the right by half a hex width.
  */
 function hexToPixel(q, r) {
   const rowWidth = ROW_WIDTHS[r];
-  // Total width of the widest row
-  const maxPixelWidth = MAX_ROW_WIDTH * (HEX_SIZE * 1.5 + HEX_SIZE * 0.5);
+  const isNarrowRow = rowWidth === 5;
 
-  // Each hex center is spaced by 1.5 * HEX_SIZE horizontally
-  const colSpacing = HEX_SIZE * 1.5;
+  // Horizontal spacing between hex centers
+  const colSpacing = HEX_WIDTH; // sqrt(3) * size
 
-  // Width of this row in pixels
-  const rowPixelWidth = (rowWidth - 1) * colSpacing;
-  const maxRowPixelWidth = (MAX_ROW_WIDTH - 1) * colSpacing;
+  // Center the board: offset narrow rows by half a hex width
+  const xOffset = isNarrowRow ? colSpacing / 2 : 0;
 
-  // Center offset for narrower rows
-  const xOffset = (maxRowPixelWidth - rowPixelWidth) / 2;
+  const x = BOARD_PADDING + xOffset + q * colSpacing + HEX_WIDTH / 2;
 
-  const x = BOARD_PADDING + xOffset + q * colSpacing;
-  const y = BOARD_PADDING + r * HEX_HEIGHT * 0.5 + HEX_HEIGHT / 2;
+  // Vertical spacing: 1.5 * size between rows for pointy-top
+  const rowSpacing = HEX_SIZE * 1.5;
+  const y = BOARD_PADDING + r * rowSpacing + HEX_SIZE;
 
-  // Alternate row vertical offset for hex tiling
-  // Even rows and odd rows interlock
-  const yFinal = BOARD_PADDING + r * (HEX_HEIGHT * 0.5 + 1);
-
-  return { x: x + HEX_SIZE, y: yFinal + HEX_SIZE };
+  return { x, y };
 }
 
 /**
  * Get total canvas size needed for the board.
  */
 function getBoardSize() {
-  const maxColSpacing = HEX_SIZE * 1.5;
-  const width = BOARD_PADDING * 2 + (MAX_ROW_WIDTH - 1) * maxColSpacing + HEX_SIZE * 2;
-  const height = BOARD_PADDING * 2 + (ROW_WIDTHS.length - 1) * (HEX_HEIGHT * 0.5 + 1) + HEX_SIZE * 2;
+  const width = BOARD_PADDING * 2 + MAX_ROW_WIDTH * HEX_WIDTH;
+  const rowSpacing = HEX_SIZE * 1.5;
+  const height = BOARD_PADDING * 2 + (ROW_WIDTHS.length - 1) * rowSpacing + HEX_SIZE * 2;
   return { width, height };
 }
 
 /**
- * Draw a flat-top hexagon at (cx, cy).
+ * Draw a pointy-top hexagon at (cx, cy).
  */
 function drawHex(ctx, cx, cy, size) {
   ctx.beginPath();
   for (let i = 0; i < 6; i++) {
-    const angle = (Math.PI / 180) * (60 * i);
+    const angle = (Math.PI / 180) * (60 * i - 30);
     const hx = cx + size * Math.cos(angle);
     const hy = cy + size * Math.sin(angle);
     if (i === 0) ctx.moveTo(hx, hy);
@@ -68,13 +64,10 @@ function drawHex(ctx, cx, cy, size) {
 function pointInHex(px, py, cx, cy, size) {
   const dx = Math.abs(px - cx);
   const dy = Math.abs(py - cy);
-
-  // Quick bounding box check
-  if (dx > size || dy > size * Math.sqrt(3) / 2) return false;
-
-  // Hex boundary check
-  return (size * Math.sqrt(3) / 2 - dy) * size >= (dx - size / 2) * size * Math.sqrt(3) / 2
-    || dx <= size / 2;
+  // Bounding box check for pointy-top
+  if (dx > size * Math.sqrt(3) / 2 || dy > size) return false;
+  // Hex edge check
+  return size - dy >= (dx / (Math.sqrt(3) / 2)) * 0.5;
 }
 
 /**
