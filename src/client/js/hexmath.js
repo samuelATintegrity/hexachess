@@ -22,10 +22,12 @@ function setFlipBoard(flip) {
  * 5-tile rows are offset to the right by half a hex width.
  */
 function hexToPixel(q, r) {
-  // When flipped (player2), reverse the visual row order
-  const displayR = flipBoard ? (ROW_WIDTHS.length - 1 - r) : r;
-  const rowWidth = ROW_WIDTHS[r]; // use original r for row width
+  const rowWidth = ROW_WIDTHS[r];
   const isNarrowRow = rowWidth === 5;
+
+  // When flipped, reverse both vertical and horizontal
+  const displayR = flipBoard ? (ROW_WIDTHS.length - 1 - r) : r;
+  const displayQ = flipBoard ? (rowWidth - 1 - q) : q;
 
   // Horizontal spacing between hex centers
   const colSpacing = HEX_WIDTH; // sqrt(3) * size
@@ -33,7 +35,7 @@ function hexToPixel(q, r) {
   // Center the board: offset narrow rows by half a hex width
   const xOffset = isNarrowRow ? colSpacing / 2 : 0;
 
-  const x = BOARD_PADDING + xOffset + q * colSpacing + HEX_WIDTH / 2;
+  const x = BOARD_PADDING + xOffset + displayQ * colSpacing + HEX_WIDTH / 2;
 
   // Vertical spacing: 1.5 * size between rows for pointy-top
   const rowSpacing = HEX_SIZE * 1.5;
@@ -150,4 +152,36 @@ function drawRoundedRect(ctx, cx, cy, w, h, radius) {
   ctx.lineTo(x, y + radius);
   ctx.quadraticCurveTo(x, y, x + radius, y);
   ctx.closePath();
+}
+
+/**
+ * Draw the shared edge between two adjacent hexagons.
+ * Finds the two vertices that the hexes share and draws a line between them.
+ */
+function drawSharedEdge(ctx, cx1, cy1, cx2, cy2, size) {
+  // Get vertices for both hexes
+  const verts1 = [];
+  const verts2 = [];
+  for (let i = 0; i < 6; i++) {
+    const angle = (Math.PI / 180) * (60 * i - 30);
+    verts1.push({ x: cx1 + size * Math.cos(angle), y: cy1 + size * Math.sin(angle) });
+    verts2.push({ x: cx2 + size * Math.cos(angle), y: cy2 + size * Math.sin(angle) });
+  }
+
+  // Find shared vertices (within tolerance)
+  const shared = [];
+  for (const v1 of verts1) {
+    for (const v2 of verts2) {
+      if (Math.abs(v1.x - v2.x) < 1 && Math.abs(v1.y - v2.y) < 1) {
+        shared.push(v1);
+      }
+    }
+  }
+
+  if (shared.length === 2) {
+    ctx.beginPath();
+    ctx.moveTo(shared[0].x, shared[0].y);
+    ctx.lineTo(shared[1].x, shared[1].y);
+    ctx.stroke();
+  }
 }

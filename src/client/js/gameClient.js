@@ -44,11 +44,11 @@ function updateUI(state) {
   const specPanel = document.getElementById('specialization-panel');
   const spawnPanel = document.getElementById('spawn-panel');
 
-  // Hide all panels first
+  // Hide all panels first, but preserve specialization/spawn panels if active
   setupPanel.style.display = 'none';
   turnInfo.style.display = 'none';
-  specPanel.style.display = 'none';
-  spawnPanel.style.display = 'none';
+  if (!awaitingSpecialization) specPanel.style.display = 'none';
+  if (!awaitingSpawnLocation) spawnPanel.style.display = 'none';
 
   switch (state.phase) {
     case 'cityPlacement': {

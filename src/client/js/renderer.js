@@ -198,6 +198,31 @@ function render() {
     }
   }
 
+  // During setup, draw a thick black border between territories
+  const isSetup = gameState.phase === 'cityPlacement' || gameState.phase === 'capitalSelection' || gameState.phase === 'unitPlacement';
+  if (isSetup) {
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 4;
+    ctx.setLineDash([]);
+    for (const key in board) {
+      const tile = board[key];
+      const tileOwner = getOwnerHalf(tile.q, tile.r);
+      // Check each neighbor — if it belongs to the other player, draw a border edge
+      const neighbors = getClientNeighbors(tile.q, tile.r);
+      for (const n of neighbors) {
+        const nKey = `${n.q},${n.r}`;
+        if (!board[nKey]) continue;
+        const nOwner = getOwnerHalf(n.q, n.r);
+        if (tileOwner !== nOwner) {
+          // Draw the shared edge between these two hexes
+          const { x: x1, y: y1 } = hexToPixel(tile.q, tile.r);
+          const { x: x2, y: y2 } = hexToPixel(n.q, n.r);
+          drawSharedEdge(ctx, x1, y1, x2, y2, HEX_SIZE - 1);
+        }
+      }
+    }
+  }
+
   // Draw territory labels - "Your Side" at bottom, "Enemy Side" at top
   ctx.font = 'bold 12px Arial';
   ctx.textAlign = 'center';

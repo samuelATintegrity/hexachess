@@ -343,8 +343,11 @@ function movePiece(gameState, playerRole, fromQ, fromR, toQ, toR) {
     return result;
   }
 
-  // Check if turn should end
-  checkTurnEnd(gameState);
+  // Don't end turn while waiting for specialization/spawn — the follow-up
+  // handlers (chooseSpecialization, spawnGrunt) will call checkTurnEnd
+  if (!result.needsSpecialization && !result.needsSpawnLocation) {
+    checkTurnEnd(gameState);
+  }
 
   return result;
 }
