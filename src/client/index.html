@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hexachess</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Lobby Screen -->
+  <div id="lobby-screen">
+    <div class="lobby-title">HEXACHESS</div>
+    <div class="lobby-subtitle">2-Player Hex Strategy Game</div>
+    <div class="lobby-actions">
+      <button id="create-btn" class="btn btn-primary">Create Game</button>
+      <span style="color: #666;">or</span>
+      <input id="room-input" type="text" placeholder="Room code" maxlength="4">
+      <button id="join-btn" class="btn btn-primary">Join Game</button>
+    </div>
+    <div id="lobby-status"></div>
+  </div>
+
+  <!-- Game Screen -->
+  <div id="game-screen">
+    <div class="game-board">
+      <canvas id="game-canvas"></canvas>
+    </div>
+    <div class="side-panel">
+      <div id="phase-info">Waiting...</div>
+      <div id="status-text"></div>
+
+      <div id="turn-info">
+        <div id="current-turn"></div>
+        <div id="moves-display">Moves remaining: <span id="moves-remaining">3</span></div>
+      </div>
+
+      <div id="setup-panel">
+        <div id="unit-buttons"></div>
+      </div>
+
+      <div id="specialization-panel"></div>
+      <div id="spawn-panel"></div>
+
+      <div class="legend">
+        <h4>Legend</h4>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #F4D03F;"></div> Plain
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #27AE60;"></div> Forest
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #8B6914;"></div> Mountain
+        </div>
+        <hr style="border-color: #333; margin: 6px 0;">
+        <div class="legend-item">
+          <div class="legend-color" style="background: #3498DB; border-radius: 50%;"></div> Grunt (circle)
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #3498DB; clip-path: polygon(50% 0%, 0% 100%, 100% 100%);"></div> Cavalry (triangle)
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #3498DB; border-radius: 4px;"></div> Vehicle (rectangle)
+        </div>
+        <div class="legend-item">
+          <span style="color: #F4D03F; font-size: 16px;">&#9733;</span> City (star)
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/constants.js"></script>
+  <script src="js/hexmath.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/gameClient.js"></script>
+  <script src="js/lobby.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,278 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  min-height: 100vh;
+}
+
+/* Lobby */
+#lobby-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 20px;
+}
+
+.lobby-title {
+  font-size: 48px;
+  font-weight: bold;
+  color: #F4D03F;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  margin-bottom: 10px;
+}
+
+.lobby-subtitle {
+  color: #aaa;
+  font-size: 16px;
+  margin-bottom: 30px;
+}
+
+.lobby-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.lobby-actions input {
+  padding: 10px 16px;
+  font-size: 18px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  background: #16213e;
+  border: 2px solid #0f3460;
+  color: #e0e0e0;
+  border-radius: 6px;
+  width: 200px;
+}
+
+.lobby-actions input::placeholder {
+  letter-spacing: 1px;
+  text-transform: none;
+}
+
+#lobby-status {
+  margin-top: 20px;
+  font-size: 16px;
+  color: #aaa;
+  text-align: center;
+}
+
+#lobby-status strong {
+  color: #F4D03F;
+  font-size: 28px;
+  letter-spacing: 4px;
+}
+
+/* Buttons */
+.btn {
+  padding: 10px 24px;
+  font-size: 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background: #3498DB;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #2980B9;
+}
+
+.btn-secondary {
+  background: #555;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #666;
+}
+
+.btn.selected {
+  outline: 3px solid #F4D03F;
+  outline-offset: 2px;
+}
+
+/* Game Screen */
+#game-screen {
+  display: none;
+  flex-direction: row;
+  min-height: 100vh;
+}
+
+.game-board {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+#game-canvas {
+  background: #16213e;
+  border-radius: 8px;
+  max-width: 100%;
+  max-height: 90vh;
+}
+
+/* Side Panel */
+.side-panel {
+  width: 280px;
+  background: #16213e;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-left: 2px solid #0f3460;
+}
+
+#phase-info {
+  font-size: 18px;
+  font-weight: bold;
+  color: #F4D03F;
+}
+
+#status-text {
+  font-size: 14px;
+  color: #ccc;
+  line-height: 1.5;
+}
+
+#turn-info {
+  display: none;
+  padding: 12px;
+  background: #0f3460;
+  border-radius: 6px;
+}
+
+#current-turn {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+#moves-display {
+  font-size: 14px;
+  color: #aaa;
+}
+
+/* Setup Panel */
+#setup-panel {
+  display: none;
+}
+
+#unit-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.unit-btn {
+  padding: 8px 16px;
+  font-size: 14px;
+  background: #0f3460;
+  color: #e0e0e0;
+  border: 1px solid #1a4a8a;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.unit-btn:hover {
+  background: #1a4a8a;
+}
+
+.unit-btn.selected {
+  background: #1a4a8a;
+  outline: 2px solid #F4D03F;
+}
+
+/* Specialization Panel */
+#specialization-panel {
+  display: none;
+  padding: 10px;
+  background: #0f3460;
+  border-radius: 6px;
+}
+
+#specialization-panel span {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 8px;
+  color: #aaa;
+}
+
+.spec-btn {
+  padding: 6px 12px;
+  font-size: 13px;
+  margin-right: 6px;
+  margin-bottom: 6px;
+  background: #16213e;
+  color: #e0e0e0;
+  border: 1px solid #333;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.spec-btn:hover {
+  background: #1a4a8a;
+}
+
+.spec-btn.selected {
+  outline: 2px solid #F4D03F;
+}
+
+/* Spawn Panel */
+#spawn-panel {
+  display: none;
+  padding: 10px;
+  background: #0f3460;
+  border-radius: 6px;
+}
+
+/* Chain pass button */
+#chain-pass-btn {
+  margin-top: 10px;
+}
+
+/* Legend */
+.legend {
+  margin-top: auto;
+  padding: 12px;
+  background: #0f3460;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.legend h4 {
+  margin-bottom: 8px;
+  color: #F4D03F;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 1px solid #333;
+}
