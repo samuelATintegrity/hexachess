@@ -54,10 +54,13 @@ function updateUI(state) {
     case 'cityPlacement': {
       phaseEl.textContent = 'Phase: City Placement';
       const remaining = CITIES_PER_PLAYER - state.setupInfo.citiesPlaced;
-      if (remaining > 0) {
-        statusEl.textContent = `Place ${remaining} more ${remaining === 1 ? 'city' : 'cities'} on your half of the board.`;
+      const isMySetupTurn = state.setupTurn === state.myRole;
+      if (remaining > 0 && isMySetupTurn) {
+        statusEl.textContent = `Your turn! Place ${remaining} more ${remaining === 1 ? 'city' : 'cities'} on your half.`;
+      } else if (remaining > 0) {
+        statusEl.textContent = 'Waiting for opponent to place a city...';
       } else {
-        statusEl.textContent = 'Waiting for opponent to place cities...';
+        statusEl.textContent = 'Waiting for opponent to finish placing cities...';
       }
       break;
     }
@@ -80,13 +83,17 @@ function updateUI(state) {
         totalRemaining += remaining[type];
       }
 
-      if (totalRemaining > 0) {
+      const isMySetupTurn = state.setupTurn === state.myRole;
+      if (totalRemaining > 0 && isMySetupTurn) {
         setupPanel.style.display = 'block';
         updateUnitButtons(remaining);
-        statusEl.textContent = 'Select a unit type, then click a valid tile to place it.';
+        statusEl.textContent = 'Your turn! Select a unit type, then click a valid tile.';
+      } else if (totalRemaining > 0) {
+        setupPanel.style.display = 'none';
+        statusEl.textContent = 'Waiting for opponent to place a unit...';
       } else {
         setupPanel.style.display = 'none';
-        statusEl.textContent = 'Waiting for opponent to place units...';
+        statusEl.textContent = 'Waiting for opponent to finish placing units...';
       }
       break;
     }
@@ -250,6 +257,7 @@ function handleCanvasClick(e) {
 }
 
 function handleCityPlacement(hex) {
+  if (localState.setupTurn !== myRole) return;
   if (localState.setupInfo.citiesPlaced >= CITIES_PER_PLAYER) return;
 
   socket.emit('place-city', { q: hex.q, r: hex.r }, (res) => {
@@ -266,6 +274,7 @@ function handleCapitalSelection(hex) {
 }
 
 function handleUnitPlacement(hex) {
+  if (localState.setupTurn !== myRole) return;
   if (!selectedUnitType) {
     showStatus('Select a unit type first.');
     return;

@@ -33,6 +33,8 @@ function createGameState(roomCode) {
     capitals: { player1: null, player2: null },
     // Chain capture state
     chainCapture: null, // { pieceId, q, r, remainingSteps, piece }
+    // Setup turn - who places next during city/unit placement
+    setupTurn: 'player1',
   };
 }
 
@@ -42,29 +44,18 @@ function createGameState(roomCode) {
  * During playing/gameOver, show everything except opponent's capital.
  */
 function serializeBoardForPlayer(gameState, playerRole) {
-  const phase = gameState.phase;
-  const isSetup = phase === 'cityPlacement' || phase === 'capitalSelection' || phase === 'unitPlacement';
   const obj = {};
   for (const [key, tile] of gameState.board) {
     const t = { ...tile };
     if (t.city) {
-      if (isSetup && t.city.owner !== playerRole) {
-        // Hide opponent's cities during setup
-        t.city = null;
-      } else {
-        t.city = { ...t.city };
-        if (t.city.owner !== playerRole) {
-          t.city.isCapital = false;
-        }
+      t.city = { ...t.city };
+      // Always hide opponent's capital identity
+      if (t.city.owner !== playerRole) {
+        t.city.isCapital = false;
       }
     }
     if (t.occupant) {
-      if (isSetup && t.occupant.owner !== playerRole) {
-        // Hide opponent's units during setup
-        t.occupant = null;
-      } else {
-        t.occupant = { ...t.occupant };
-      }
+      t.occupant = { ...t.occupant };
     }
     obj[key] = t;
   }
@@ -95,6 +86,7 @@ function getPlayerState(gameState, playerRole) {
     myRole: playerRole,
     isMyTurn: gameState.currentTurn === playerRole,
     winner: gameState.winner,
+    setupTurn: gameState.setupTurn,
     setupInfo: {
       citiesPlaced: gameState.players[playerRole].citiesPlaced,
       capitalChosen: gameState.players[playerRole].capitalChosen,
@@ -132,6 +124,9 @@ function placeCity(gameState, playerRole, q, r) {
   if (gameState.phase !== 'cityPlacement') {
     return { success: false, reason: 'Not in city placement phase' };
   }
+  if (gameState.setupTurn !== playerRole) {
+    return { success: false, reason: 'Not your turn to place' };
+  }
 
   const player = gameState.players[playerRole];
   if (player.citiesPlaced >= CITIES_PER_PLAYER) {
@@ -150,6 +145,9 @@ function placeCity(gameState, playerRole, q, r) {
   if (gameState.players.player1.citiesPlaced >= CITIES_PER_PLAYER &&
       gameState.players.player2.citiesPlaced >= CITIES_PER_PLAYER) {
     gameState.phase = 'capitalSelection';
+  } else {
+    // Switch setup turn to opponent
+    gameState.setupTurn = playerRole === 'player1' ? 'player2' : 'player1';
   }
 
   return { success: true };
@@ -180,6 +178,7 @@ function selectCapital(gameState, playerRole, q, r) {
   // Check if both players have chosen
   if (gameState.players.player1.capitalChosen && gameState.players.player2.capitalChosen) {
     gameState.phase = 'unitPlacement';
+    gameState.setupTurn = 'player1'; // Reset for unit placement phase
   }
 
   return { success: true };
@@ -191,6 +190,9 @@ function selectCapital(gameState, playerRole, q, r) {
 function placeUnit(gameState, playerRole, q, r, unitType, specialization) {
   if (gameState.phase !== 'unitPlacement') {
     return { success: false, reason: 'Not in unit placement phase' };
+  }
+  if (gameState.setupTurn !== playerRole) {
+    return { success: false, reason: 'Not your turn to place' };
   }
 
   const player = gameState.players[playerRole];
@@ -228,6 +230,9 @@ function placeUnit(gameState, playerRole, q, r, unitType, specialization) {
     gameState.phase = 'playing';
     gameState.currentTurn = 'player1';
     gameState.movesRemaining = MOVES_PER_TURN;
+  } else {
+    // Switch setup turn to opponent
+    gameState.setupTurn = playerRole === 'player1' ? 'player2' : 'player1';
   }
 
   return { success: true };
