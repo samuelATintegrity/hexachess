@@ -236,11 +236,20 @@ function setupSocket(io) {
         return;
       }
 
-      // Find which role had this room
       const role = data.role;
-      if (!gameState.players[role] || gameState.players[role].socketId) {
+      if (!gameState.players[role]) {
         callback({ success: false, reason: 'Cannot rejoin' });
         return;
+      }
+
+      const existingSocketId = gameState.players[role].socketId;
+      if (existingSocketId && existingSocketId !== socket.id) {
+        // Old socket might still be lingering (refresh before disconnect fires)
+        // Check if the old socket is actually connected
+        const existingSocket = io.sockets.sockets.get(existingSocketId);
+        if (existingSocket) {
+          existingSocket.disconnect(true); // force disconnect old socket
+        }
       }
 
       gameState.players[role].socketId = socket.id;
