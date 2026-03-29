@@ -146,8 +146,11 @@ function placeCity(gameState, playerRole, q, r) {
       gameState.players.player2.citiesPlaced >= CITIES_PER_PLAYER) {
     gameState.phase = 'capitalSelection';
   } else {
-    // Switch setup turn to opponent
-    gameState.setupTurn = playerRole === 'player1' ? 'player2' : 'player1';
+    // Switch setup turn to opponent, unless they're already done
+    const opponent = playerRole === 'player1' ? 'player2' : 'player1';
+    if (gameState.players[opponent].citiesPlaced < CITIES_PER_PLAYER) {
+      gameState.setupTurn = opponent;
+    }
   }
 
   return { success: true };
@@ -231,8 +234,15 @@ function placeUnit(gameState, playerRole, q, r, unitType, specialization) {
     gameState.currentTurn = 'player1';
     gameState.movesRemaining = MOVES_PER_TURN;
   } else {
-    // Switch setup turn to opponent
-    gameState.setupTurn = playerRole === 'player1' ? 'player2' : 'player1';
+    // Switch setup turn to opponent, unless they're already done
+    const opponent = playerRole === 'player1' ? 'player2' : 'player1';
+    const opponentDone = Object.entries(UNITS_PER_PLAYER).every(
+      ([type, count]) => gameState.players[opponent].unitsPlaced[type] >= count
+    );
+    if (!opponentDone) {
+      gameState.setupTurn = opponent;
+    }
+    // else: keep turn on current player (opponent finished first)
   }
 
   return { success: true };

@@ -57,10 +57,13 @@ function updateUI(state) {
       const isMySetupTurn = state.setupTurn === state.myRole;
       if (remaining > 0 && isMySetupTurn) {
         statusEl.textContent = `Your turn! Place ${remaining} more ${remaining === 1 ? 'city' : 'cities'} on your half.`;
+        setSelection(null, getValidCityTiles(state));
       } else if (remaining > 0) {
         statusEl.textContent = 'Waiting for opponent to place a city...';
+        clearSelection();
       } else {
         statusEl.textContent = 'Waiting for opponent to finish placing cities...';
+        clearSelection();
       }
       break;
     }
@@ -88,9 +91,11 @@ function updateUI(state) {
         setupPanel.style.display = 'block';
         updateUnitButtons(remaining);
         statusEl.textContent = 'Your turn! Select a unit type, then click a valid tile.';
+        setSelection(null, getValidUnitTiles(state));
       } else if (totalRemaining > 0) {
         setupPanel.style.display = 'none';
         statusEl.textContent = 'Waiting for opponent to place a unit...';
+        clearSelection();
       } else {
         setupPanel.style.display = 'none';
         statusEl.textContent = 'Waiting for opponent to finish placing units...';
@@ -520,6 +525,40 @@ function handleSpawnGrunt() {
       };
     }
   };
+}
+
+function getValidCityTiles(state) {
+  const tiles = [];
+  for (const key in state.board) {
+    const tile = state.board[key];
+    if (tile.occupant || tile.city) continue;
+    if (getOwnerHalf(tile.q, tile.r) !== state.myRole) continue;
+    tiles.push({ q: tile.q, r: tile.r, isCapture: false });
+  }
+  return tiles;
+}
+
+function getValidUnitTiles(state) {
+  const tiles = [];
+  for (const key in state.board) {
+    const tile = state.board[key];
+    if (tile.occupant || tile.city) continue;
+    if (getOwnerHalf(tile.q, tile.r) !== state.myRole) continue;
+
+    const neighbors = getClientNeighbors(tile.q, tile.r);
+    const adjacentToOwn = neighbors.some(n => {
+      const nTile = state.board[`${n.q},${n.r}`];
+      if (!nTile) return false;
+      if (nTile.city && nTile.city.owner === state.myRole) return true;
+      if (nTile.occupant && nTile.occupant.owner === state.myRole) return true;
+      return false;
+    });
+
+    if (adjacentToOwn) {
+      tiles.push({ q: tile.q, r: tile.r, isCapture: false });
+    }
+  }
+  return tiles;
 }
 
 function showStatus(msg) {
